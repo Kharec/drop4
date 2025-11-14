@@ -11,11 +11,6 @@
 #define P1 1
 #define P2 2
 #define WIN_LENGTH 4
-
-#define DIR_HORIZONTAL 0
-#define DIR_VERTICAL 1
-#define DIR_DIAG_DOWN 2
-#define DIR_DIAG_UP 3
 #define NUM_DIRECTIONS 4
 
 typedef struct {
