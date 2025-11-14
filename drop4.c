@@ -90,6 +90,8 @@ int is_winning_move(Game *game) {
         break;
       count++;
     }
+    if (count >= WIN_LENGTH)
+      return 1;
     for (int offset = 1; offset < WIN_LENGTH; offset++) {
       int new_row = row - directions[dir][0] * offset;
       int new_col = col - directions[dir][1] * offset;
@@ -101,8 +103,6 @@ int is_winning_move(Game *game) {
       if (count >= WIN_LENGTH)
         return 1;
     }
-    if (count >= WIN_LENGTH)
-      return 1;
   }
   return 0;
 }
