@@ -6,7 +6,7 @@
 #include <string.h>
 
 #define ROWS 6
-#define COLS 7
+#define COLUMNS 7
 #define EMPTY 0
 #define P1 1
 #define P2 2
@@ -14,31 +14,31 @@
 #define NUM_DIRECTIONS 4
 
 typedef struct {
-  int board[ROWS][COLS];
+  int board[ROWS][COLUMNS];
   int current_player;
   int last_row;
-  int last_col;
+  int last_column;
 } Game;
 
 void init_game(Game *game) {
   for (int i = 0; i < ROWS; i++) {
-    for (int j = 0; j < COLS; j++) {
+    for (int j = 0; j < COLUMNS; j++) {
       game->board[i][j] = EMPTY;
     }
   }
   game->current_player = P1;
   game->last_row = -1;
-  game->last_col = -1;
+  game->last_column = -1;
 }
 
 void print_board(Game *game) {
   printf("\n");
-  for (int j = 0; j < COLS; j++) {
+  for (int j = 0; j < COLUMNS; j++) {
     printf(" %d ", j);
   }
   printf("\n");
   for (int i = 0; i < ROWS; i++) {
-    for (int j = 0; j < COLS; j++) {
+    for (int j = 0; j < COLUMNS; j++) {
       char symbol = game->board[i][j] == EMPTY ? '.'
                     : game->board[i][j] == P1  ? 'X'
                                                : 'O';
@@ -53,51 +53,53 @@ void switch_player(Game *game) {
   game->current_player = game->current_player == P1 ? P2 : P1;
 }
 
-int drop_piece(Game *game, int col) {
+int drop_piece(Game *game, int column) {
   for (int i = ROWS - 1; i >= 0; i--) {
-    if (game->board[i][col] == EMPTY) {
-      game->board[i][col] = game->current_player;
+    if (game->board[i][column] == EMPTY) {
+      game->board[i][column] = game->current_player;
       game->last_row = i;
-      game->last_col = col;
+      game->last_column = column;
       return 1;
     }
   }
   return 0;
 }
 
-int is_valid_move(Game *game, int col) {
-  return col >= 0 && col < COLS && game->board[0][col] == EMPTY;
+int is_valid_move(Game *game, int column) {
+  return column >= 0 && column < COLUMNS && game->board[0][column] == EMPTY;
 }
 
 int is_winning_move(Game *game) {
-  if (game->last_row < 0 || game->last_col < 0) {
+  if (game->last_row < 0 || game->last_column < 0) {
     return 0;
   }
 
   int row = game->last_row;
-  int col = game->last_col;
-  int player = game->board[row][col];
+  int column = game->last_column;
+  int player = game->board[row][column];
   const int directions[NUM_DIRECTIONS][2] = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
 
-  for (int dir = 0; dir < NUM_DIRECTIONS; dir++) {
+  for (int direction = 0; direction < NUM_DIRECTIONS; direction++) {
     int count = 1;
     for (int offset = 1; offset < WIN_LENGTH; offset++) {
-      int new_row = row + directions[dir][0] * offset;
-      int new_col = col + directions[dir][1] * offset;
-      if (new_row < 0 || new_row >= ROWS || new_col < 0 || new_col >= COLS)
+      int new_row = row + directions[direction][0] * offset;
+      int new_column = column + directions[direction][1] * offset;
+      if (new_row < 0 || new_row >= ROWS || new_column < 0 ||
+          new_column >= COLUMNS)
         break;
-      if (game->board[new_row][new_col] != player)
+      if (game->board[new_row][new_column] != player)
         break;
       count++;
     }
     if (count >= WIN_LENGTH)
       return 1;
     for (int offset = 1; offset < WIN_LENGTH; offset++) {
-      int new_row = row - directions[dir][0] * offset;
-      int new_col = col - directions[dir][1] * offset;
-      if (new_row < 0 || new_row >= ROWS || new_col < 0 || new_col >= COLS)
+      int new_row = row - directions[direction][0] * offset;
+      int new_column = column - directions[direction][1] * offset;
+      if (new_row < 0 || new_row >= ROWS || new_column < 0 ||
+          new_column >= COLUMNS)
         break;
-      if (game->board[new_row][new_col] != player)
+      if (game->board[new_row][new_column] != player)
         break;
       count++;
       if (count >= WIN_LENGTH)
@@ -108,7 +110,7 @@ int is_winning_move(Game *game) {
 }
 
 int is_board_full(Game *game) {
-  for (int j = 0; j < COLS; j++) {
+  for (int j = 0; j < COLUMNS; j++) {
     if (game->board[0][j] == EMPTY)
       return 0;
   }
@@ -154,11 +156,11 @@ static int is_quit_command(const char *str) {
 }
 
 int get_column_input(Game *game) {
-  int col;
+  int column;
   char buffer[64];
   while (1) {
     printf("Player %d, enter a column (0-%d) or 'q' to quit: ",
-           game->current_player, COLS - 1);
+           game->current_player, COLUMNS - 1);
     if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
       return -1;
     }
@@ -169,7 +171,7 @@ int get_column_input(Game *game) {
       while ((c = getchar()) != '\n' && c != EOF)
         ;
       printf("Error: Input too long. Please enter a number between 0 and %d.\n",
-             COLS - 1);
+             COLUMNS - 1);
       continue;
     }
 
@@ -184,14 +186,14 @@ int get_column_input(Game *game) {
     if (errno == ERANGE || col_long < INT_MIN || col_long > INT_MAX) {
       printf(
           "Error: Number too large. Please enter a number between 0 and %d.\n",
-          COLS - 1);
+          COLUMNS - 1);
       continue;
     }
 
     if (endptr == buffer) {
       printf("Error: Invalid input. Please enter a number between 0 and %d, or "
              "'q' to quit.\n",
-             COLS - 1);
+             COLUMNS - 1);
       continue;
     }
 
@@ -202,25 +204,26 @@ int get_column_input(Game *game) {
     if (*endptr != '\0') {
       printf("Error: Invalid characters after number. Please enter only a "
              "number between 0 and %d.\n",
-             COLS - 1);
+             COLUMNS - 1);
       continue;
     }
 
-    col = (int)col_long;
+    column = (int)col_long;
 
-    if (col < 0 || col >= COLS) {
+    if (column < 0 || column >= COLUMNS) {
       printf("Error: Column %d is out of range. Please enter a number between "
              "0 and %d.\n",
-             col, COLS - 1);
+             column, COLUMNS - 1);
       continue;
     }
 
-    if (!is_valid_move(game, col)) {
-      printf("Error: Column %d is full. Please choose another column.\n", col);
+    if (!is_valid_move(game, column)) {
+      printf("Error: Column %d is full. Please choose another column.\n",
+             column);
       continue;
     }
 
-    return col;
+    return column;
   }
 }
 
@@ -230,13 +233,13 @@ int main() {
   print_board(&game);
 
   while (1) {
-    int col = get_column_input(&game);
-    if (col < 0) {
+    int column = get_column_input(&game);
+    if (column < 0) {
       printf("\nGame interrupted.\n");
       break;
     }
 
-    drop_piece(&game, col);
+    drop_piece(&game, column);
     print_board(&game);
     if (is_winning_move(&game)) {
       printf("Player %d wins!\n", game.current_player);
